@@ -1,0 +1,6 @@
+".pyc"
+__pycache__/
+.vscode/
+literature/
+biofeedback_analyses.egg-info/
+misc/
