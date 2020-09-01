@@ -5,92 +5,98 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
 import numpy as np
-import numpy.ma as mask
-import matplotlib.pyplot as plt
-from mne.io import read_raw_edf
-from pathlib import Path
 from scipy.signal import bessel, sosfiltfilt, hilbert
+from biopeaks.resp import resp_extrema, resp_stats
+from biopeaks.analysis_utils import find_segments
 
 
-def bessel_bandpass_sos(lowcut, highcut, fs, order):
+def biofeedback_filter(resp, sfreq):
+    """Same filter used during real-time processing (biofeedback computation).
+    """
 
-    nyq = 0.5 * fs
-    low = lowcut / nyq
-    high = highcut / nyq
+    nyq = 0.5 * sfreq
+    low = 4 / 60 / nyq
+    high = 12 / 60 / nyq
+    order = 2
     sos = bessel(order, [low, high], btype="bandpass", output="sos")
-    return sos
+
+    resp_filt = sosfiltfilt(sos, resp)
+
+    return resp_filt
 
 
-def compute_median_inst_amp(physiopaths):
+def instantaneous_amplitude(signal):
 
-    inst_amps = []
+    inst_amp = np.abs(hilbert(signal))
 
-    for PHYSPATH in physiopaths:
-
-        data = read_raw_edf(PHYSPATH, preload=True, verbose="warning")
-        resp = np.ravel(data.get_data(picks=0))
-        sfreq = data.info["sfreq"]
-
-        sos = bessel_bandpass_sos(4 / 60, 12 / 60, sfreq, 2)
-        resp_filt = sosfiltfilt(sos, resp)
-
-        inst_amp = np.abs(hilbert(resp_filt))
-        inst_amps.append(np.median(inst_amp))
-
-    return np.mean(inst_amps)
+    return inst_amp
 
 
-def bursts_dual_threshold(signal, low, high, min_duration=0):
+def bursts_dual_threshold(inst_amp, low, high, min_duration=0):
 
-    above_low = signal > low
-    beg_low = np.where(np.logical_and(np.logical_not(above_low[0:-1]), above_low[1:]))[0]
-    end_low = np.where(np.logical_and(above_low[0:-1], np.logical_not(above_low[1:])))[0]
-    above_high = np.where(signal > high)[0]
+    above_low = inst_amp > low
+    beg_low, end_low, duration_low = find_segments(above_low)
+    above_high = np.where(inst_amp > high)[0]
 
-    bursts = np.zeros(signal.size, dtype=bool)
+    bursts = np.zeros(inst_amp.size, dtype=bool)
 
-    for i, j in zip(beg_low, end_low):
+    for beg, end, duration in zip(beg_low, end_low, duration_low):
 
-        if j - i < min_duration:
+        if duration < min_duration:
             continue
 
-        burst = np.arange(i, j)
-        if list(np.intersect1d(burst, above_high)):
-            bursts[i:j] = True
+        burst = np.arange(beg, end)
+        if np.intersect1d(burst, above_high).size:
+            bursts[beg:end] = True
 
     return bursts
 
 
-DATADIR = r"C:\Users\JohnDoe\surfdrive\Biochill_RITE\20200818_v3.0.0\data"
-physiopaths = list(Path(DATADIR).glob("*recordsignal*"))[:2]
+def compute_resp_stats(resp, sfreq):
+
+    stats = {}
+    extrema = resp_extrema(resp, sfreq)
+    _, rate, amp = resp_stats(extrema, resp, sfreq)
+    stats["median_resp_rate"] = np.median(rate)
+    stats["median_resp_amp"] = np.median(amp)
+
+    return stats
 
 
-median_inst_amp = compute_median_inst_amp(physiopaths)
+def compute_biofeedback_stats(inst_amp, normalize_by):
 
-fig, ax = plt.subplots(nrows=len(physiopaths), ncols=1, sharex=False)
+    stats = {}
+    stats["normalized_median_power"] = np.median(inst_amp) / normalize_by
 
-for i, PHYSPATH in enumerate(physiopaths):
+    return stats
 
-    data = read_raw_edf(PHYSPATH, preload=True, verbose="error")
-    resp = np.ravel(data.get_data(picks=0))
-    sfreq = data.info["sfreq"]
-    sec = data.times
 
-    sos = bessel_bandpass_sos(4 / 60, 12 / 60, sfreq, 2)
-    resp_filt = sosfiltfilt(sos, resp)
+def compute_burst_stats(bursts, sfreq):
 
-    inst_amp = inst_amp = np.abs(hilbert(resp_filt))
-    print(np.median(inst_amp) / median_inst_amp)
+    change = np.diff(bursts)
+    idcs, = change.nonzero()
 
-    bursts = bursts_dual_threshold(inst_amp,
-                                   median_inst_amp,
-                                   2 * median_inst_amp,
-                                   min_duration=int(np.rint(15 * sfreq)))
+    idcs += 1    # Get indices following the change.
 
-    ax[i].plot(sec, resp_filt)
-    ax[i].plot(sec, inst_amp)
-    ax[i].plot(mask.array(sec, mask=~bursts), mask.array(inst_amp, mask=~bursts), c="r")    # mark bursts
-    ax[i].axhline(y=median_inst_amp)
-    ax[i].axhline(y=2 * median_inst_amp)
+    if bursts[0]:
+        # If the first sample fulfills the condition, prepend a zero.
+        idcs = np.r_[0, idcs]
 
-plt.show()
+    if bursts[-1]:
+        # If the last sample fulfills the condition, append an index
+        # corresponding to the length of signal
+        idcs = np.r_[idcs, bursts.size]
+
+    starts = idcs[0::2]
+    ends = idcs[1::2]
+    durations = ends - starts
+
+    stats = {"n_bursts": len(durations),
+             "duration_mean": np.mean(durations) / sfreq,
+             "duration_std": np.std(durations) / sfreq,
+             "percent_burst": 100 * np.sum(bursts) / len(bursts)}
+
+    if not durations.size:
+        stats.update((k, 0) for k in stats)
+
+    return stats
