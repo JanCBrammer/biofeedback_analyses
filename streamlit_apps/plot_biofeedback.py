@@ -18,7 +18,6 @@ st.beta_set_page_config(layout="wide")
 st.title("Slow Breathing Intensity")
 
 
-
 @st.cache
 def median_inst_amp(paths):
 
@@ -32,6 +31,7 @@ def median_inst_amp(paths):
 
     return np.mean(inst_amps)
 
+
 subject = st.sidebar.selectbox("Select participant", SUBJECTS)
 
 physiopaths = list(Path(f"{DATADIR_PROCESSED}/{subject}").glob(f"{subject}*biofeedback*"))
@@ -44,7 +44,7 @@ burst_min_duration = st.sidebar.number_input("Minimum burst duration (seconds)",
 burst_min_duration = int(np.rint(burst_min_duration * SFREQ))
 
 plots = []
-for session in SESSIONS:    # plot all available sessions
+for i, session in enumerate(SESSIONS):    # plot all available sessions
 
     physiopath_session = [path for path in physiopaths if session in str(path)]
     if len(physiopath_session) != 1:
@@ -66,14 +66,21 @@ for session in SESSIONS:    # plot all available sessions
                                               min_duration=burst_min_duration)
 
     p = figure(tools="pan,box_zoom,wheel_zoom,reset", title=title,
-               x_axis_label="Seconds", y_axis_label="Amplitude")
+               x_axis_label="Seconds", y_axis_label="Amplitude",
+               plot_height=300, toolbar_location="right")
     p.line(sec, resp_filt, legend_label="breathing at 4 to 12 bpm")
     p.line(sec, inst_amp, line_color="orange", legend_label="instantaneous amplitude")
-    p.line(mask.array(sec, mask=~bursts),
-           mask.array(inst_amp, mask=~bursts),
-           line_color="red", legend_label="bursts")    # mark bursts
-    p.ray(x=0, y=burst_threshold_low, line_color="green", legend_label="median amplitude all sessions")
-    p.ray(x=0, y=burst_threshold_high, line_color="green", line_dash="dashed", legend_label="upper burst threshold")
+    p.line(mask.array(sec, mask=~bursts), mask.array(inst_amp, mask=~bursts),
+           legend_label="bursts", line_color="red")    # mark bursts
+    p.ray(x=0, y=burst_threshold_low, line_color="green",
+          legend_label="median amplitude all sessions")
+    p.ray(x=0, y=burst_threshold_high, line_color="green", line_dash="dashed",
+          legend_label="upper burst threshold")
+
+    p.legend.orientation = "horizontal"
+    p.legend.location = "bottom_left"
+    if i > 0:
+        p.legend.visible = False
 
     plots.append(p)
 
