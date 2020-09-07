@@ -71,11 +71,11 @@ for i, session in enumerate(SESSIONS):    # plot all available sessions
     p.line(sec, resp_filt, legend_label="breathing at 4 to 12 bpm")
     p.line(sec, inst_amp, line_color="orange", legend_label="instantaneous amplitude")
     p.line(mask.array(sec, mask=~bursts), mask.array(inst_amp, mask=~bursts),
-           legend_label="bursts", line_color="red")    # mark bursts
+           legend_label="bursts", line_color="red", line_width=3)    # mark bursts
     p.ray(x=0, y=burst_threshold_low, line_color="green",
-          legend_label="median amplitude all sessions")
+          legend_label="median amplitude all sessions", line_width=2)
     p.ray(x=0, y=burst_threshold_high, line_color="green", line_dash="dashed",
-          legend_label="upper burst threshold")
+          legend_label="upper burst threshold", line_width=3)
 
     p.legend.orientation = "horizontal"
     p.legend.location = "bottom_left"
