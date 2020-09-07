@@ -4,34 +4,31 @@
 author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
-import numpy as np
 from biofeedback_analyses.preprocessing import (preprocess_events,
                                                 preprocess_ibis,
                                                 preprocess_biofeedback)
+from biofeedback_analyses.config import (SUBJECTS, DATADIR_RAW, DATADIR_PROCESSED)
 
-
-datadir = "C:/Users/JohnDoe/surfdrive/Biochill_RITE/20200818_v3.0.0/data"
-subjects = [f"subj-{str(i).zfill(2)}" for i in np.arange(1, 2)]
 
 pipeline = [
 
     {"func": preprocess_events,
-     "subjects": subjects,
-     "inputs": {"event_path": [datadir, "raw", "*recordtrigger*"]},
-     "outputs": {"save_path": [datadir, "processed", "events"]},
+     "subjects": SUBJECTS,
+     "inputs": {"event_path": [DATADIR_RAW, "*recordtrigger*"]},
+     "outputs": {"save_path": [DATADIR_PROCESSED, "events"]},
      "recompute": False},
 
     {"func": preprocess_ibis,
-     "subjects": subjects,
-     "inputs": {"event_path": [datadir, "processed", "*events*"],
-                "physio_path": [datadir, "raw", "*recordsignal*"]},
-     "outputs": {"save_path": [datadir, "processed", "ibis"]},
+     "subjects": SUBJECTS,
+     "inputs": {"event_path": [DATADIR_PROCESSED, "*events*"],
+                "physio_path": [DATADIR_RAW, "*recordsignal*"]},
+     "outputs": {"save_path": [DATADIR_PROCESSED, "ibis"]},
      "recompute": True},
 
     {"func": preprocess_biofeedback,
-     "subjects": subjects,
-     "inputs": {"physio_path": [datadir, "raw", "*recordsignal*"]},
-     "outputs": {"save_path": [datadir, "processed", "biofeedback"]},
+     "subjects": SUBJECTS,
+     "inputs": {"physio_path": [DATADIR_RAW, "*recordsignal*"]},
+     "outputs": {"save_path": [DATADIR_PROCESSED, "biofeedback"]},
      "recompute": False}
 
 ]

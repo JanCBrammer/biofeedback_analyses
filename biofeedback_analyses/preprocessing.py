@@ -14,17 +14,15 @@ from biofeedback_analyses import event_utils, resp_utils, hrv_utils
 def preprocess_events(subject, inputs, outputs, recompute):
 
     root = inputs["event_path"][0]
-    subdir = inputs["event_path"][1]
-    filename = inputs["event_path"][2]
-    event_paths = Path(root).joinpath(f"{subdir}/{subject}").glob(filename)
+    filename = inputs["event_path"][1]
+    event_paths = Path(root).joinpath(subject).glob(filename)
 
     for event_path in event_paths:
 
         root = outputs["save_path"][0]
-        subdir = outputs["save_path"][1]
         subj_sess_cond = event_path.name[:23]
-        filename = f"{subj_sess_cond}{outputs['save_path'][2]}"
-        save_path = Path(root).joinpath(f"{subdir}/{subject}/{filename}")
+        filename = f"{subj_sess_cond}{outputs['save_path'][1]}"
+        save_path = Path(root).joinpath(f"{subject}/{filename}")
 
         computed = save_path.exists()   # Boolean indicating if file already exists.
         if computed and not recompute:    # only recompute if requested
@@ -40,14 +38,12 @@ def preprocess_events(subject, inputs, outputs, recompute):
 def preprocess_ibis(subject, inputs, outputs, recompute):
 
     root = inputs["event_path"][0]
-    subdir = inputs["event_path"][1]
-    filename = inputs["event_path"][2]
-    event_paths = list(Path(root).joinpath(f"{subdir}/{subject}").glob(filename))
+    filename = inputs["event_path"][1]
+    event_paths = list(Path(root).joinpath(subject).glob(filename))
 
     root = inputs["physio_path"][0]
-    subdir = inputs["physio_path"][1]
-    filename = inputs["physio_path"][2]
-    physio_paths = list(Path(root).joinpath(f"{subdir}/{subject}").glob(filename))
+    filename = inputs["physio_path"][1]
+    physio_paths = list(Path(root).joinpath(subject).glob(filename))
 
     assert len(event_paths) == len(physio_paths)
 
@@ -58,10 +54,9 @@ def preprocess_ibis(subject, inputs, outputs, recompute):
         assert physio_name[:23] == event_name[:23]
 
         root = outputs["save_path"][0]
-        subdir = outputs["save_path"][1]
         subj_sess_cond = physio_path.name[:23]
-        filename = f"{subj_sess_cond}{outputs['save_path'][2]}"
-        save_path = Path(root).joinpath(f"{subdir}/{subject}/{filename}")
+        filename = f"{subj_sess_cond}{outputs['save_path'][1]}"
+        save_path = Path(root).joinpath(f"{subject}/{filename}")
 
         computed = save_path.exists()   # Boolean indicating if file already exists.
         if computed and not recompute:    # only recompute if requested
@@ -93,17 +88,15 @@ def preprocess_ibis(subject, inputs, outputs, recompute):
 def preprocess_biofeedback(subject, inputs, outputs, recompute):
 
     root = inputs["physio_path"][0]
-    subdir = inputs["physio_path"][1]
-    filename = inputs["physio_path"][2]
-    physio_paths = Path(root).joinpath(f"{subdir}/{subject}").glob(filename)
+    filename = inputs["physio_path"][1]
+    physio_paths = Path(root).joinpath(subject).glob(filename)
 
     for physio_path in physio_paths:
 
         root = outputs["save_path"][0]
-        subdir = outputs["save_path"][1]
         subj_sess_cond = physio_path.name[:23]
-        filename = f"{subj_sess_cond}{outputs['save_path'][2]}"
-        save_path = Path(root).joinpath(f"{subdir}/{subject}/{filename}")
+        filename = f"{subj_sess_cond}{outputs['save_path'][1]}"
+        save_path = Path(root).joinpath(f"{subject}/{filename}")
 
         computed = save_path.exists()   # Boolean indicating if file already exists.
         if computed and not recompute:    # only recompute if requested

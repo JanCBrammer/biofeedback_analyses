@@ -13,8 +13,8 @@ from bokeh.layouts import gridplot
 from bokeh.palettes import Colorblind as palette
 from mne.io import read_raw_edf
 from biofeedback_analyses import event_utils
-from biofeedback_analyses.app_config import (DATADIR_PROCESSED, DATADIR_RAW,
-                                             SUBJECTS, SESSIONS)
+from biofeedback_analyses.config import (DATADIR_PROCESSED, DATADIR_RAW,
+                                         SUBJECTS, SESSIONS)
 
 
 st.beta_set_page_config(layout="wide")

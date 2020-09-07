@@ -12,31 +12,17 @@ from pathlib import Path
 from biofeedback_analyses import resp_utils
 from bokeh.plotting import figure
 from bokeh.layouts import column
-from biofeedback_analyses.app_config import (SFREQ, DATADIR_PROCESSED, SUBJECTS, SESSIONS)
+from biofeedback_analyses.config import (SFREQ, DATADIR_PROCESSED, SUBJECTS, SESSIONS)
 
 st.beta_set_page_config(layout="wide")
 st.title("Slow Breathing Intensity")
-
-
-@st.cache
-def median_inst_amp(paths):
-
-    inst_amps = []
-
-    for path in paths:
-
-        data = pd.read_csv(path, sep="\t")
-        inst_amp = np.ravel(data["inst_amp"])
-        inst_amps.append(np.median(inst_amp))
-
-    return np.mean(inst_amps)
 
 
 subject = st.sidebar.selectbox("Select participant", SUBJECTS)
 
 physiopaths = list(Path(f"{DATADIR_PROCESSED}/{subject}").glob(f"{subject}*biofeedback*"))
 
-burst_threshold_low = median_inst_amp(physiopaths)
+burst_threshold_low = resp_utils.median_inst_amp(physiopaths)
 burst_threshold_high = st.sidebar.number_input("Upper burst threshold (x * median amplitude all session)",
                                                min_value=1., max_value=3., step=.5, value=1.5)
 burst_threshold_high *= burst_threshold_low
@@ -48,7 +34,7 @@ for i, session in enumerate(SESSIONS):    # plot all available sessions
 
     physiopath_session = [path for path in physiopaths if session in str(path)]
     if len(physiopath_session) != 1:
-        continue
+        raise IOError("Didn't find unique processed data.")
 
     title = str(physiopath_session[0].name[:22])
     if title[-1] == "A":
@@ -56,7 +42,7 @@ for i, session in enumerate(SESSIONS):    # plot all available sessions
     elif title[-1] == "B":
         title = title[:16] + "with_biofeedback"
 
-    data = pd.read_csv(physiopath_session[0], sep="\t")
+    data = pd.read_csv(*physiopath_session, sep="\t")
     resp_filt = np.ravel(data["resp_filt"])
     inst_amp = np.ravel(data["inst_amp"])
     sec = np.linspace(0, resp_filt.size / SFREQ, resp_filt.size)
