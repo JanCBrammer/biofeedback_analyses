@@ -5,9 +5,25 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
 import numpy as np
+import pandas as pd
 from scipy.signal import bessel, sosfiltfilt, hilbert
 from biopeaks.resp import resp_extrema, resp_stats
 from biopeaks.analysis_utils import find_segments
+import streamlit as st
+
+
+@st.cache
+def median_inst_amp(paths):
+
+    inst_amps = []
+
+    for path in paths:
+
+        data = pd.read_csv(path, sep="\t")
+        inst_amp = np.ravel(data["inst_amp"])
+        inst_amps.append(np.median(inst_amp))
+
+    return np.mean(inst_amps)
 
 
 def biofeedback_filter(resp, sfreq):
