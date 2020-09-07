@@ -49,9 +49,9 @@ def plot_dataset(physiopath, eventpath, physiochannels={}, continuous_events=[],
     -------
     Figure
     """
-    data = read_raw_edf(physiopath, preload=True)
+    data = read_raw_edf(physiopath, preload=True, verbose="error")
     sec = data.times
-    events = pd.read_csv(eventpath, sep='\t')
+    events = pd.read_csv(eventpath, sep="\t")
 
     plots = []
 
@@ -63,8 +63,9 @@ def plot_dataset(physiopath, eventpath, physiochannels={}, continuous_events=[],
         for name, color in zip(discrete_events, palette[8]):    # mark discrete events
             samp = event_utils.get_eventtimes(events, name, as_sample=True)
             p.ray(sec[samp], min(signal), length=0, angle=np.pi / 2,
-                  color=color, alpha=.5)
-
+                  color=color, line_width=2, legend_label=name)
+        p.legend.orientation = "horizontal"
+        p.legend.location = "top_left"
         plots.append([p])
 
     for name in continuous_events:
@@ -77,7 +78,7 @@ def plot_dataset(physiopath, eventpath, physiochannels={}, continuous_events=[],
         for name, color in zip(discrete_events, palette[8]):    # mark discrete events
             samp = event_utils.get_eventtimes(events, name, as_sample=True)
             p.ray(sec[samp], min(vals), length=0, angle=np.pi / 2, color=color,
-                  alpha=.5)
+                  line_width=2)
 
         plots.append([p])
 
@@ -94,10 +95,24 @@ def plot_dataset(physiopath, eventpath, physiochannels={}, continuous_events=[],
 
 subject = st.sidebar.selectbox("Select participant", SUBJECTS)
 session = st.sidebar.selectbox("Select session", SESSIONS)
-continuous_events = st.sidebar.radio("Select continuous data streams",
-                                     ("Feedback", "InterBeatInterval"))
-discrete_events = st.sidebar.radio("Select discrete events",
-                                   ("WaveStart", "ShotHit", "ShotMissed"))
+continuous_events = st.sidebar.multiselect("Select continuous data streams",
+                                           ["Feedback", "InterBeatInterval", "HeartRate"],
+                                           ["Feedback", "InterBeatInterval"])
+discrete_events = st.sidebar.multiselect("Select discrete events",
+                                         ["GameStart", "LevelLoaded", "RadioStart", "WaveStart",
+                                          "WaveSpawn", "RadioFinished", "ShotMissed", "ShotHit",
+                                          "ZedApproached", "ZedCaptured", "GunReload", "WaveEnd",
+                                          "RadioConfirm", "ZedAttack",
+                                          "MarkerDispatchEvent-GlassPre2", "MarkerGlassBreak",
+                                          "MarkerDispatchEvent-GlassPost1",
+                                          "MarkerDispatchEvent-CarAlarmPre1",
+                                          "MarkerDispatchEvent-CarAlarmPre2", "MarkerCarAlarmStart",
+                                          "MarkerCarAlarmEnd", "RadioRequestRepeat",
+                                          "MarkerDispatchEvent-CarAlarmPost1", "MarkerFireAlarmEnd",
+                                          "MarkerFireAlarmStart", "GameEnd", "GameQuit"],
+                                         ["WaveStart", "MarkerCarAlarmStart",
+                                          "MarkerFireAlarmStart", "MarkerGlassBreak", "GameStart",
+                                          "GameEnd"])
 
 eventpath = list(Path(f"{DATADIR_PROCESSED}/{subject}").glob(f"{subject}_{session}*events*"))
 physiopath = list(Path(f"{DATADIR_RAW}/{subject}").glob(f"{subject}_{session}*recordsignal*"))
@@ -107,7 +122,7 @@ if len(eventpath) != 1 or len(physiopath) != 1:
 
 fig = plot_dataset(*physiopath, *eventpath,
                    physiochannels={"Breathing": 0},
-                   continuous_events=[continuous_events],
-                   discrete_events=[discrete_events])
+                   continuous_events=continuous_events,
+                   discrete_events=discrete_events)
 
 st.bokeh_chart(fig)
