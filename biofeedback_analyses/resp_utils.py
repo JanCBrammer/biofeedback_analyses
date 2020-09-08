@@ -82,12 +82,17 @@ def compute_resp_stats(resp, sfreq):
 def compute_biofeedback_stats(inst_amp, normalize_by):
 
     stats = {}
-    stats["normalized_median_power"] = np.median(inst_amp) / normalize_by
+    stats["normalized_median_resp_power"] = np.median(inst_amp) / normalize_by
 
     return stats
 
 
 def compute_burst_stats(bursts, sfreq):
+
+    stats = {"n_bursts": 0,
+             "mean_duration_bursts": 0,
+             "std_duration_bursts": 0,
+             "percent_bursts": 0}
 
     change = np.diff(bursts)
     idcs, = change.nonzero()
@@ -107,12 +112,12 @@ def compute_burst_stats(bursts, sfreq):
     ends = idcs[1::2]
     durations = ends - starts
 
-    stats = {"n_bursts": len(durations),
-             "duration_mean": np.mean(durations) / sfreq,
-             "duration_std": np.std(durations) / sfreq,
-             "percent_burst": 100 * np.sum(bursts) / len(bursts)}
+    if durations.size == 0:
+        return stats
 
-    if not durations.size:
-        stats.update((k, 0) for k in stats)
+    stats["n_bursts"] = durations.size
+    stats["mean_duration_bursts"] = durations.mean() / sfreq
+    stats["std_duration_bursts"] = durations.mean() / sfreq
+    stats["percent_bursts"] = 100 * np.sum(bursts) / len(bursts)
 
     return stats
