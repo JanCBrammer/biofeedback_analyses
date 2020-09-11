@@ -45,13 +45,14 @@ def preprocess_ibis(subject, inputs, outputs, recompute):
     filename = inputs["physio_path"][1]
     physio_paths = list(Path(root).joinpath(subject).glob(filename))
 
-    assert len(event_paths) == len(physio_paths)
+    for event_path in event_paths:
 
-    for physio_path, event_path in zip(physio_paths, event_paths):
-        # Make sure that the two paths pertain to the same recording.
-        physio_name = physio_path.name
         event_name = event_path.name
-        assert physio_name[:23] == event_name[:23]
+        # Find corresponding physio_path
+        physio_path_idx = [i for i, j in enumerate(physio_paths) if str(j.name)[:21] == str(event_name)[:21]]
+        if len(physio_path_idx) != 1:
+            continue
+        physio_path = physio_paths[physio_path_idx[0]]
 
         root = outputs["save_path"][0]
         subj_sess_cond = physio_path.name[:23]
@@ -64,12 +65,15 @@ def preprocess_ibis(subject, inputs, outputs, recompute):
 
         data = read_raw_edf(physio_path, preload=True, verbose="error")
         resp = np.ravel(data.get_data(picks=0))
-
         events = pd.read_csv(event_path, sep='\t')
 
         # Original IBIs and associated samples. Multiple IBIs can be associated with
         # the same sample since Polar belt can include multiple IBIs in a single notification.
         ibis = event_utils.get_eventvalues(events, "InterBeatInterval")
+
+        if ibis.size == 0:
+            print(f"Didn't find InterBeatInterval events for {event_path}.")
+            continue
 
         ibis_corrected = hrv_utils.correct_ibis(ibis)
         # Associate IBIs with a sample that represents the time of their occurence rather
