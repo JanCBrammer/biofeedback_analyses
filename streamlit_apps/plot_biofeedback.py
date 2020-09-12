@@ -33,8 +33,10 @@ plots = []
 for i, session in enumerate(SESSIONS):    # plot all available sessions
 
     physiopath_session = [path for path in physiopaths if session in str(path)]
+
     if len(physiopath_session) != 1:
-        raise IOError("Didn't find unique processed data.")
+        print(f"Didn't find unique processed data for {session}.")
+        continue
 
     title = str(physiopath_session[0].name[:22])
     if title[-1] == "A":
