@@ -21,19 +21,22 @@ pipeline = [
 
     {"func": summary_resp,
      "subjects": SUBJECTS,
-     "inputs": {"physio_path": [DATADIR_RAW, "*recordsignal*"]},
+     "inputs": {"event_path": [DATADIR_PROCESSED, "*events*"],
+                "physio_path": [DATADIR_RAW, "*recordsignal*"]},
      "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
      "recompute": True},
 
     {"func": summary_biofeedback,
      "subjects": SUBJECTS,
-     "inputs": {"physio_path": [DATADIR_PROCESSED, "*biofeedback*"]},
+     "inputs": {"event_path": [DATADIR_PROCESSED, "*events*"],
+                "physio_path": [DATADIR_PROCESSED, "*biofeedback*"]},
      "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
      "recompute": True},
 
     {"func": summary_heart,
      "subjects": SUBJECTS,
-     "inputs": {"physio_path": [DATADIR_PROCESSED, "*ibis*"]},
+     "inputs": {"event_path": [DATADIR_PROCESSED, "*events*"],
+                "physio_path": [DATADIR_PROCESSED, "*ibis*"]},
      "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
      "recompute": True}
 

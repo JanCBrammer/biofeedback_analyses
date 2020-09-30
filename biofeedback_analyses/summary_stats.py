@@ -9,7 +9,7 @@ import pandas as pd
 from itertools import product
 from pathlib import Path
 from mne.io import read_raw_edf
-from biofeedback_analyses import resp_utils, hrv_utils
+from biofeedback_analyses import resp_utils, hrv_utils, event_utils
 from biofeedback_analyses.config import SUBJECTS, SESSIONS, SFREQ
 
 
@@ -70,6 +70,10 @@ def summary_resp(subject, inputs, outputs, recompute):
     filename = inputs["physio_path"][1]
     physio_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
 
+    root = inputs["event_path"][0]
+    filename = inputs["event_path"][1]
+    event_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+
     if not physio_paths:
         print(f"No files found for {subject}.")
         return
@@ -86,9 +90,31 @@ def summary_resp(subject, inputs, outputs, recompute):
             else:
                 return
 
+        # Find corresponding event_path
+        event_path_idx = [i for i, j in enumerate(event_paths) if str(j.name)[:21] == str(physio_path.name)[:21]]
+        if len(event_path_idx) != 1:
+            print(f"Didn't find matching events for {physio_path.name}.")
+            continue
+        event_path = event_paths[event_path_idx[0]]
+        events = pd.read_csv(event_path, sep='\t')
+
         data_raw = read_raw_edf(physio_path, preload=True, verbose="error")
         resp = np.ravel(data_raw.get_data(picks=[0]))
-        resp_stats = resp_utils.compute_resp_stats(resp, SFREQ)
+
+        beg = event_utils.get_eventtimes(events, "GameStart", as_sample=True)
+        end = event_utils.get_eventtimes(events, "GameEnd", as_sample=True)
+        if len(beg) < 1:
+            print(f"Didn't find 'GameStart' event for {event_path.name}.")
+            continue
+        if len(beg) > 1:
+            print(f"Found {len(beg)} 'GameStart' events for {event_path.name}.")
+            beg = [beg[-1]]    # game was restarted, pick latest start
+        if len(end) != 1:
+            print(f"Found {len(end)} events matching 'GameEnd' for {event_path.name}.")
+            continue
+        beg, end = *beg, *end
+        resp_game = resp[beg:end]
+        resp_stats = resp_utils.compute_resp_stats(resp_game, SFREQ)
 
         for key, value in resp_stats.items():
             df_summary.loc[row_idx, key] = value
@@ -107,6 +133,10 @@ def summary_biofeedback(subject, inputs, outputs, recompute):
     root = inputs["physio_path"][0]
     filename = inputs["physio_path"][1]
     physio_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+
+    root = inputs["event_path"][0]
+    filename = inputs["event_path"][1]
+    event_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
 
     if not physio_paths:
         print(f"No files found for {subject}.")
@@ -129,10 +159,31 @@ def summary_biofeedback(subject, inputs, outputs, recompute):
             else:
                 return
 
+        # Find corresponding event_path
+        event_path_idx = [i for i, j in enumerate(event_paths) if str(j.name)[:21] == str(physio_path.name)[:21]]
+        if len(event_path_idx) != 1:
+            print(f"Didn't find matching events for {physio_path.name}.")
+            continue
+        event_path = event_paths[event_path_idx[0]]
+        events = pd.read_csv(event_path, sep='\t')
+
         data = pd.read_csv(physio_path, sep="\t")
         inst_amp = np.ravel(data["inst_amp"])
+        beg = event_utils.get_eventtimes(events, "GameStart", as_sample=True)
+        end = event_utils.get_eventtimes(events, "GameEnd", as_sample=True)
+        if len(beg) < 1:
+            print(f"Didn't find 'GameStart' event for {event_path.name}.")
+            continue
+        if len(beg) > 1:
+            print(f"Found {len(beg)} 'GameStart' events for {event_path.name}.")
+            beg = [beg[-1]]    # game was restarted, pick latest start
+        if len(end) != 1:
+            print(f"Found {len(end)} events matching 'GameEnd' for {event_path.name}.")
+            continue
+        beg, end = *beg, *end
+        inst_amp_game = inst_amp[beg:end]
 
-        bursts = resp_utils.bursts_dual_threshold(inst_amp, burst_threshold_low,
+        bursts = resp_utils.bursts_dual_threshold(inst_amp_game, burst_threshold_low,
                                                   burst_threshold_high,
                                                   min_duration=burst_min_duration)
 
@@ -140,7 +191,7 @@ def summary_biofeedback(subject, inputs, outputs, recompute):
         for key, value in burst_stats.items():
             df_summary.loc[row_idx, key] = value
 
-        biofeedback_stats = resp_utils.compute_biofeedback_stats(inst_amp,
+        biofeedback_stats = resp_utils.compute_biofeedback_stats(inst_amp_game,
                                                                  normalize_by=burst_threshold_low)
         for key, value in biofeedback_stats.items():
             df_summary.loc[row_idx, key] = value
