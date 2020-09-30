@@ -9,6 +9,7 @@ from biofeedback_analyses import event_utils
 from biopeaks.filters import butter_lowpass_filter
 from biopeaks.heart import correct_peaks
 from scipy.interpolate import interp1d
+from scipy.signal import welch
 
 
 def correct_ibis(ibis):
@@ -106,3 +107,40 @@ def interpolate_ibis(peaks, ibis, samples):
     ibis_filt = butter_lowpass_filter(ibis_interpolated, 1, 10, 12)
 
     return ibis_filt
+
+
+def compute_hrv_stats(ibis, sfreq):
+
+    stats = {}
+
+    freqs, psd = welch(ibis, fs=sfreq, nperseg=4096)
+
+    vlf_band = {"fmin": 0.003, "fmax": 0.04}
+    lf_band = {"fmin": 0.04, "fmax": 0.15}
+    hf_band = {"fmin": 0.15, "fmax": 0.40}
+
+    vlf_idcs = np.logical_and(freqs >= vlf_band["fmin"], freqs < vlf_band["fmax"])
+    lf_idcs = np.logical_and(freqs >= lf_band["fmin"], freqs < lf_band["fmax"])
+    hf_idcs = np.logical_and(freqs >= hf_band["fmin"], freqs < hf_band["fmax"])
+
+    # Integrate using the composite trapezoidal rule.
+    vlf = np.trapz(y=psd[vlf_idcs], x=freqs[vlf_idcs])
+    lf = np.trapz(y=psd[lf_idcs], x=freqs[lf_idcs])
+    hf = np.trapz(y=psd[hf_idcs], x=freqs[hf_idcs])
+    stats["hrv_vlf"] = vlf
+    stats["hrv_lf"] = lf
+    stats["hrv_hf"] = hf
+    stats["hrv_lf_hf_ratio"] = lf / hf
+    stats["hrv_lf_nu"] = (lf / (lf + hf)) * 100
+    stats["hrv_hf_nu"] = (hf / (lf + hf)) * 100
+    stats["median_heart_period"] = np.median(ibis)
+
+    # plt.figure()
+
+    # plt.plot(freqs[vlf_idcs], psd[vlf_idcs], c="r")
+    # plt.plot(freqs[lf_idcs], psd[lf_idcs], c="b")
+    # plt.plot(freqs[hf_idcs], psd[hf_idcs], c="g")
+
+    # plt.show()
+
+    return stats
