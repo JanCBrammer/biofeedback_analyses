@@ -68,13 +68,13 @@ def populate_plots(src, series, aggregates):
 
             serie_scatter = series[c].scatter(x="sess", y=c, source=src,
                                               view=view, size=15,
-                                              marker=markers, color=colors,
+                                              marker=markers, color=colors, alpha=.5,
                                               muted_color="gray", muted_alpha=.2)
-            aggregate_scatter = aggregates[c].scatter(x="cond", y=jitter(c, width=1, range=aggregates[c].x_range),
+            aggregate_scatter = aggregates[c].scatter(x=jitter("cond", width=.4, range=aggregates[c].x_range), y=c,
                                                       source=src, view=view,
                                                       size=15, marker=markers,
-                                                      color=colors, alpha=.7,
-                                                      muted_color="gray", muted_alpha=.7)
+                                                      color=colors, alpha=.5,
+                                                      muted_color="gray", muted_alpha=.2)
             glyphs.append(serie_line)
             glyphs.append(serie_scatter)
             glyphs.append(aggregate_scatter)
@@ -98,7 +98,7 @@ subjects = populate_plots(src, series, aggregates)
 
 unmuted = {}
 for subj in SUBJECTS:
-    unmuted[subj] = st.sidebar.checkbox(subj, value=False)
+    unmuted[subj] = st.sidebar.checkbox(subj, value=True)
 
 for key, val in unmuted.items():
     toggle_mute(key, val)
