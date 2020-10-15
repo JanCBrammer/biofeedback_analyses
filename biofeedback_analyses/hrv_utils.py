@@ -9,7 +9,7 @@ from biofeedback_analyses import event_utils
 from biopeaks.filters import butter_lowpass_filter
 from biopeaks.heart import correct_peaks
 from scipy.interpolate import interp1d
-from scipy.signal import welch
+from scipy.signal import welch, coherence
 
 
 def correct_ibis(ibis):
@@ -144,3 +144,27 @@ def compute_hrv_stats(ibis, sfreq):
     # plt.show()
 
     return stats
+
+
+def compute_coherence(resp, ibis, sfreq):
+
+    freqs, coh = coherence(resp, ibis, sfreq, nperseg=1024)
+
+    lf_band = {"fmin": 0.04, "fmax": 0.15}
+    hf_band = {"fmin": 0.15, "fmax": 0.40}
+
+    lf_idcs = np.logical_and(freqs >= lf_band["fmin"], freqs < lf_band["fmax"])
+    hf_idcs = np.logical_and(freqs >= hf_band["fmin"], freqs < hf_band["fmax"])
+
+    coh_lf = np.mean(coh[lf_idcs])
+    coh_hf = np.mean(coh[hf_idcs])
+    stats = {}
+    stats["coherence_lf"] = coh_lf
+    stats["coherence_hf"] = coh_hf
+
+    return stats
+
+    # plt.plot(freqs, coh)
+    # plt.xlabel('frequency [Hz]')
+    # plt.ylabel('Coherence')
+    # plt.show()

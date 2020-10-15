@@ -120,9 +120,9 @@ def summary_resp(subject, inputs, outputs, recompute):
 
         for key, value in resp_stats.items():
             df_summary.loc[row_idx, key] = value
-
-        df_summary.to_csv(save_path, sep="\t", index=False)
         print(f"Updated {save_path} with {physio_path}.")
+
+    df_summary.to_csv(save_path, sep="\t", index=False)
 
 
 def summary_biofeedback(subject, inputs, outputs, recompute):
@@ -197,9 +197,9 @@ def summary_biofeedback(subject, inputs, outputs, recompute):
                                                                  normalize_by=burst_threshold_low)
         for key, value in biofeedback_stats.items():
             df_summary.loc[row_idx, key] = value
-
-        df_summary.to_csv(save_path, sep="\t", index=False)
         print(f"Updated {save_path} with {physio_path}.")
+
+    df_summary.to_csv(save_path, sep="\t", index=False)
 
 
 def summary_heart(subject, inputs, outputs, recompute):
@@ -262,6 +262,53 @@ def summary_heart(subject, inputs, outputs, recompute):
 
         for key, value in hrv_stats.items():
             df_summary.loc[row_idx, key] = value
-
-        df_summary.to_csv(save_path, sep="\t", index=False)
         print(f"Updated {save_path} with {physio_path}.")
+
+    df_summary.to_csv(save_path, sep="\t", index=False)
+
+
+def summary_coherence(subject, inputs, outputs, recompute):
+
+    root = outputs["save_path"][0]
+    filename = outputs["save_path"][1]
+    save_path = Path(root).joinpath(f"{filename}")
+    df_summary = pd.read_csv(save_path, sep="\t")    # raises if file doesn't exist
+
+    root = inputs["resp_path"][0]
+    filename = inputs["resp_path"][1]
+    resp_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+
+    root = inputs["ibis_path"][0]
+    filename = inputs["ibis_path"][1]
+    ibis_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+
+    for i, resp_path in enumerate(resp_paths):
+
+        row_idx = get_row_idx(resp_path, df_summary)
+        columns = ["coherence_lf", "coherence_hf"]
+        computed = df_summary.loc[row_idx, columns].isna().values.sum() != len(columns)   # skip if all columns contain NaN (make sure to reserve NaN as place-holder for non-computed results)
+        if computed and not recompute:
+            print(f"Not re-computing {resp_path}.")
+            if i < len(resp_paths) - 1:    # make sure to save updates only when values have been (re-) computed
+                continue
+            else:
+                return
+
+        # Find corresponding ibis_path
+        ibis_path_idx = [i for i, j in enumerate(ibis_paths) if str(j.name)[:21] == str(resp_path.name)[:21]]
+        if len(ibis_path_idx) != 1:
+            print(f"Didn't find matching events for {resp_path.name}.")
+            continue
+        ibis_path = ibis_paths[ibis_path_idx[0]]
+        ibis = np.ravel(pd.read_csv(ibis_path, sep='\t'))
+
+        data = read_raw_edf(resp_path, preload=True, verbose="error")
+        resp = np.ravel(data.get_data(picks=0))
+
+        coherence_stats = hrv_utils.compute_coherence(resp, ibis, SFREQ)
+
+        for key, value in coherence_stats.items():
+            df_summary.loc[row_idx, key] = value
+        print(f"Updated {save_path} with {resp_path}.")
+
+    df_summary.to_csv(save_path, sep="\t", index=False)
