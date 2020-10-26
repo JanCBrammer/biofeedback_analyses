@@ -30,7 +30,7 @@ pipeline = [
     {"func": summary_biofeedback,
      "subjects": SUBJECTS,
      "inputs": {"event_path": [DATADIR_PROCESSED, "*events*"],
-                "physio_path": [DATADIR_PROCESSED, "*biofeedback*"]},
+                "physio_path": [DATADIR_PROCESSED, "*resp*"]},
      "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
      "recompute": False},
 

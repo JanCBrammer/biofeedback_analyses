@@ -89,7 +89,7 @@ def preprocess_ibis(subject, inputs, outputs, recompute):
         print(f"Saved {save_path}")
 
 
-def preprocess_biofeedback(subject, inputs, outputs, recompute):
+def preprocess_resp(subject, inputs, outputs, recompute):
 
     root = inputs["physio_path"][0]
     filename = inputs["physio_path"][1]
@@ -117,4 +117,51 @@ def preprocess_biofeedback(subject, inputs, outputs, recompute):
                       "inst_amp": inst_amp}).to_csv(save_path, sep="\t",
                                                     header=True, index=False,
                                                     float_format="%.4f")
+        print(f"Saved {save_path}")
+
+
+def preprocess_biofeedback(subject, inputs, outputs, recompute):
+
+    root = inputs["event_path"][0]
+    filename = inputs["event_path"][1]
+    event_paths = list(Path(root).joinpath(subject).glob(filename))
+
+    root = inputs["physio_path"][0]
+    filename = inputs["physio_path"][1]
+    physio_paths = list(Path(root).joinpath(subject).glob(filename))
+
+    for event_path in event_paths:
+
+        event_name = event_path.name
+        # Find corresponding physio_path
+        physio_path_idx = [i for i, j in enumerate(physio_paths) if str(j.name)[:21] == str(event_name)[:21]]
+        if len(physio_path_idx) != 1:
+            continue
+        physio_path = physio_paths[physio_path_idx[0]]
+
+        root = outputs["save_path"][0]
+        subj_sess_cond = physio_path.name[:23]
+        filename = f"{subj_sess_cond}{outputs['save_path'][1]}"
+        save_path = Path(root).joinpath(f"{subject}/{filename}")
+
+        computed = save_path.exists()   # Boolean indicating if file already exists.
+        if computed and not recompute:    # only recompute if requested
+            continue
+
+        ibis = np.ravel(pd.read_csv(physio_path, sep='\t'))
+        local_power_hrv = hrv_utils.compute_local_power(ibis)
+
+        events = pd.read_csv(event_path, sep='\t')
+        biofeedback_values = event_utils.get_eventvalues(events, "Feedback")
+        if biofeedback_values.size == 0:
+            print(f"Didn't find Feedback events for {event_path}.")
+            continue
+        biofeedback_samples = event_utils.get_eventtimes(events, "Feedback", as_sample=True)
+        biofeedback = resp_utils.interpolate_biofeedback(biofeedback_samples,
+                                                         biofeedback_values,
+                                                         range(ibis.size))
+        pd.DataFrame({"original_resp_biofeedback": biofeedback,
+                      "local_power_hrv": local_power_hrv}).to_csv(save_path, sep="\t",
+                                                                  header=True, index=False,
+                                                                  float_format="%.4f")
         print(f"Saved {save_path}")

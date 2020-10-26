@@ -6,10 +6,10 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 
 import numpy as np
 from biofeedback_analyses import event_utils
-from biopeaks.filters import butter_lowpass_filter
+from biopeaks.filters import butter_lowpass_filter, moving_average
 from biopeaks.heart import correct_peaks
 from scipy.interpolate import interp1d
-from scipy.signal import welch, coherence
+from scipy.signal import welch, coherence, find_peaks
 
 
 def correct_ibis(ibis):
@@ -78,7 +78,7 @@ def ibis_to_rpeaks(ibis, events):
     return peaks_samp
 
 
-def interpolate_ibis(peaks, ibis, samples):
+def interpolate_ibis(peaks, ibis, interpolation_samples):
     """Interpolate IBIs between peaks over a range of samples.
     IMPORTANT: Polar H10 (H9) records IBIs in 1/1024 seconds format, i.e. not
     milliseconds. IBIs need to be transformed to milliseconds before being
@@ -90,7 +90,7 @@ def interpolate_ibis(peaks, ibis, samples):
         The samples at which the R-peaks occur.
     ibis : array
         IBIs in milliseconds.
-    samples : array
+    interpolation_samples : array
         Samples over which the IBIs will be interpolated.
 
     Returns
@@ -100,7 +100,7 @@ def interpolate_ibis(peaks, ibis, samples):
     """
     f_interp = interp1d(peaks, ibis, bounds_error=False,
                         fill_value=(ibis[0], ibis[-1]))
-    ibis_interpolated = f_interp(samples)
+    ibis_interpolated = f_interp(interpolation_samples)
 
     # Smooth out edges left over from linear interpolation. Lowpass filtering
     # at 1 Hz preserves frequencies in the "very high frequency" (VHF) range of 0.4-0.9 Hz.
@@ -167,4 +167,29 @@ def compute_coherence(resp, ibis, sfreq):
     # plt.plot(freqs, coh)
     # plt.xlabel('frequency [Hz]')
     # plt.ylabel('Coherence')
+    # plt.show()
+
+
+def compute_local_power(ibis):
+    """Compute local HRV power on interpolated IBI signal."""
+    loc_max, _ = find_peaks(ibis)
+    loc_min, _ = find_peaks(ibis * -1)
+    loc_ext = np.concatenate((loc_max, loc_min))
+    loc_ext.sort(kind="mergesort")
+
+    loc_power = np.abs(np.ediff1d(ibis[loc_ext], to_begin=0))
+    loc_power[0] = loc_power[1]
+    loc_power_smooth = moving_average(loc_power, 5)
+
+    f_interp = interp1d(loc_ext, loc_power_smooth, bounds_error=False,
+                        fill_value=(loc_power[0], loc_power[-1]))
+    inst_loc_power = f_interp(range(ibis.size))
+
+    return inst_loc_power
+
+    # fig, (ax0, ax1) = plt.subplots(nrows=2, ncols=1, sharex=True)
+    # ax0.vlines(loc_ext, ymin=min(ibis), ymax=max(ibis), colors="m", alpha=.5)
+    # ax0.plot(ibis)
+    # ax1.vlines(loc_ext, ymin=min(inst_loc_power), ymax=max(inst_loc_power), colors="m", alpha=.5)
+    # ax1.plot(inst_loc_power)
     # plt.show()

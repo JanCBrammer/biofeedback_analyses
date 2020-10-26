@@ -6,6 +6,7 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 
 from biofeedback_analyses.preprocessing import (preprocess_events,
                                                 preprocess_ibis,
+                                                preprocess_resp,
                                                 preprocess_biofeedback)
 from biofeedback_analyses.config import (SUBJECTS, DATADIR_RAW, DATADIR_PROCESSED)
 
@@ -23,13 +24,20 @@ pipeline = [
      "inputs": {"event_path": [DATADIR_PROCESSED, "*events*"],
                 "physio_path": [DATADIR_RAW, "*recordsignal*"]},
      "outputs": {"save_path": [DATADIR_PROCESSED, "ibis"]},
+     "recompute": False},
+
+    {"func": preprocess_resp,
+     "subjects": SUBJECTS,
+     "inputs": {"physio_path": [DATADIR_RAW, "*recordsignal*"]},
+     "outputs": {"save_path": [DATADIR_PROCESSED, "resp"]},
      "recompute": True},
 
     {"func": preprocess_biofeedback,
      "subjects": SUBJECTS,
-     "inputs": {"physio_path": [DATADIR_RAW, "*recordsignal*"]},
+     "inputs": {"physio_path": [DATADIR_PROCESSED, "*ibis*"],
+                "event_path": [DATADIR_PROCESSED, "*event*"]},
      "outputs": {"save_path": [DATADIR_PROCESSED, "biofeedback"]},
-     "recompute": False}
+     "recompute": True}
 
 ]
 
