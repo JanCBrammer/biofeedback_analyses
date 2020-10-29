@@ -20,7 +20,7 @@ st.title("Slow Breathing Intensity")
 
 subject = st.sidebar.selectbox("Select participant", SUBJECTS)
 
-physiopaths = list(Path(f"{DATADIR_PROCESSED}/{subject}").glob(f"{subject}*biofeedback*"))
+physiopaths = list(Path(f"{DATADIR_PROCESSED}/{subject}").glob(f"{subject}*resp"))
 
 burst_threshold_low = resp_utils.median_inst_amp(physiopaths)
 burst_threshold_high = st.sidebar.number_input("Upper burst threshold (x * median amplitude all session)",

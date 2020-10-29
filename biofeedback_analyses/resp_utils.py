@@ -6,8 +6,7 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 
 import numpy as np
 import pandas as pd
-from scipy.signal import bessel, sosfiltfilt, hilbert
-from scipy.interpolate import interp1d
+from scipy.signal import hilbert
 from biopeaks.resp import resp_extrema, resp_stats
 from biopeaks.analysis_utils import find_segments
 import streamlit as st
@@ -25,30 +24,6 @@ def median_inst_amp(paths):
         inst_amps.append(np.median(inst_amp))
 
     return np.mean(inst_amps)
-
-
-def biofeedback_filter(resp, sfreq):
-    """Filter as during real-time processing (biofeedback computation)."""
-    nyq = 0.5 * sfreq
-    low = 4 / 60 / nyq
-    high = 12 / 60 / nyq
-    order = 2
-    sos = bessel(order, [low, high], btype="bandpass", output="sos")
-
-    resp_filt = sosfiltfilt(sos, resp)
-
-    return resp_filt
-
-
-def interpolate_biofeedback(biofeedback_samples, biofeedback_values,
-                            interpolation_samples):
-
-    f_interp = interp1d(biofeedback_samples, biofeedback_values,
-                        bounds_error=False, fill_value=(biofeedback_values[0],
-                                                        biofeedback_values[-1]))
-    biofeedback_interpolated = f_interp(interpolation_samples)
-
-    return biofeedback_interpolated
 
 
 def instantaneous_amplitude(signal):
@@ -89,7 +64,7 @@ def compute_resp_stats(resp, sfreq):
     return stats
 
 
-def compute_biofeedback_stats(inst_amp, normalize_by):
+def compute_resp_power_stats(inst_amp, normalize_by):
 
     stats = {}
     stats["normalized_median_resp_power"] = np.median(inst_amp) / normalize_by

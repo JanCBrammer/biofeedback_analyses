@@ -179,9 +179,8 @@ def compute_local_power(ibis):
 
     loc_power = np.abs(np.ediff1d(ibis[loc_ext], to_begin=0))
     loc_power[0] = loc_power[1]
-    loc_power_smooth = moving_average(loc_power, 5)
 
-    f_interp = interp1d(loc_ext, loc_power_smooth, bounds_error=False,
+    f_interp = interp1d(loc_ext, loc_power, bounds_error=False,
                         fill_value=(loc_power[0], loc_power[-1]))
     inst_loc_power = f_interp(range(ibis.size))
 
@@ -193,3 +192,12 @@ def compute_local_power(ibis):
     # ax1.vlines(loc_ext, ymin=min(inst_loc_power), ymax=max(inst_loc_power), colors="m", alpha=.5)
     # ax1.plot(inst_loc_power)
     # plt.show()
+
+
+def compute_local_power_hrv_stats(local_power_hrv):
+
+    stats = {}
+    stats["median_local_power_hrv"] = np.median(local_power_hrv)
+    stats["mean_local_power_hrv"] = np.mean(local_power_hrv)
+
+    return stats

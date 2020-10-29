@@ -4,10 +4,11 @@
 author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
-from biofeedback_analyses.preprocessing import (preprocess_events,
-                                                preprocess_ibis,
-                                                preprocess_resp,
-                                                preprocess_biofeedback)
+from pipelines.preprocessing import (preprocess_events,
+                                     preprocess_ibis,
+                                     preprocess_resp,
+                                     preprocess_hrv_biofeedback,
+                                     preprocess_resp_biofeedback)
 from biofeedback_analyses.config import (SUBJECTS, DATADIR_RAW, DATADIR_PROCESSED)
 
 
@@ -21,8 +22,7 @@ pipeline = [
 
     {"func": preprocess_ibis,
      "subjects": SUBJECTS,
-     "inputs": {"event_path": [DATADIR_PROCESSED, "*events*"],
-                "physio_path": [DATADIR_RAW, "*recordsignal*"]},
+     "inputs": {"event_path": [DATADIR_PROCESSED, "*events"]},
      "outputs": {"save_path": [DATADIR_PROCESSED, "ibis"]},
      "recompute": False},
 
@@ -30,13 +30,18 @@ pipeline = [
      "subjects": SUBJECTS,
      "inputs": {"physio_path": [DATADIR_RAW, "*recordsignal*"]},
      "outputs": {"save_path": [DATADIR_PROCESSED, "resp"]},
-     "recompute": True},
+     "recompute": False},
 
-    {"func": preprocess_biofeedback,
+    {"func": preprocess_hrv_biofeedback,
      "subjects": SUBJECTS,
-     "inputs": {"physio_path": [DATADIR_PROCESSED, "*ibis*"],
-                "event_path": [DATADIR_PROCESSED, "*event*"]},
-     "outputs": {"save_path": [DATADIR_PROCESSED, "biofeedback"]},
+     "inputs": {"physio_path": [DATADIR_PROCESSED, "*ibis"]},
+     "outputs": {"save_path": [DATADIR_PROCESSED, "hrv_biofeedback"]},
+     "recompute": False},
+
+    {"func": preprocess_resp_biofeedback,
+     "subjects": SUBJECTS,
+     "inputs": {"event_path": [DATADIR_PROCESSED, "*events"]},
+     "outputs": {"save_path": [DATADIR_PROCESSED, "resp_biofeedback"]},
      "recompute": True}
 
 ]
