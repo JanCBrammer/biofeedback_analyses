@@ -35,7 +35,8 @@ def plot_dataset(original_resp_biofeedback_path,
     local_power_hrv_biofeedback = compute_biofeedback_score(local_power_hrv_smooth,
                                                             local_power_hrv_target)
 
-    sec = np.arange(original_resp_biofeedback.size)
+    sec = np.linspace(0, original_resp_biofeedback.size / SFREQ,
+                      original_resp_biofeedback.size)
 
     plots = []
 
@@ -53,12 +54,13 @@ def plot_dataset(original_resp_biofeedback_path,
     p = figure(plot_height=150)
     p.line(sec[:local_power_hrv_biofeedback.size], local_power_hrv_biofeedback,
            legend_label="local_power_hrv_biofeedback")
+    p.xaxis.visible = False
     plots.append([p])
 
     p = figure(plot_height=150)
     p.line(sec, original_resp_biofeedback,
            legend_label="original_resp_biofeedback")
-    p.xaxis.visible = False
+    p.xaxis.axis_label = "Seconds"
     plots.append([p])
 
     fig = gridplot(plots, sizing_mode="stretch_width")
@@ -69,9 +71,9 @@ def plot_dataset(original_resp_biofeedback_path,
 subject = st.sidebar.selectbox("Select participant", SUBJECTS)
 session = st.sidebar.selectbox("Select session", SESSIONS)
 
-window = st.sidebar.number_input("Local HRV power average window (sec)", min_value=1, max_value=10, step=1)
+window = st.sidebar.number_input("Local HRV power average window (sec)", min_value=1, max_value=15, step=1)
 window = int(np.rint(window * SFREQ))
-target = st.sidebar.number_input("Local HRV power target (msec)", min_value=50, max_value=200, step=10)
+target = st.sidebar.number_input("Local HRV power target (msec)", min_value=25, max_value=250, step=10)
 
 original_resp_biofeedback_path = list(Path(f"{DATADIR_PROCESSED}/{subject}").glob(f"{subject}_{session}*resp_biofeedback"))
 ibis_path = list(Path(f"{DATADIR_PROCESSED}/{subject}").glob(f"{subject}_{session}*ibis"))
