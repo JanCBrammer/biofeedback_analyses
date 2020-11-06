@@ -41,27 +41,35 @@ def plot_dataset(original_resp_biofeedback_path,
     plots = []
 
     p = figure(plot_height=150)
-    p.line(sec[:ibis.size], ibis, legend_label="ibis")
+    p.line(sec[:ibis.size], ibis, legend_label="ibis", line_width=2,
+           line_color="blue")
     p.xaxis.visible = False
     plots.append([p])
 
     p = figure(plot_height=150)
     p.line(sec[:local_power_hrv_smooth.size], local_power_hrv_smooth,
-           legend_label="local_power_hrv_smooth")
+           legend_label="local_power_hrv_smooth", line_width=2,
+           line_color="green")
     p.xaxis.visible = False
     plots.append([p])
 
     p = figure(plot_height=150)
     p.line(sec[:local_power_hrv_biofeedback.size], local_power_hrv_biofeedback,
-           legend_label="local_power_hrv_biofeedback")
+           legend_label="local_power_hrv_biofeedback", line_width=2,
+           line_color="orange")
     p.xaxis.visible = False
     plots.append([p])
 
     p = figure(plot_height=150)
     p.line(sec, original_resp_biofeedback,
-           legend_label="original_resp_biofeedback")
+           legend_label="original_resp_biofeedback", line_width=2,
+           line_color="red")
     p.xaxis.axis_label = "Seconds"
     plots.append([p])
+
+    for i, p in enumerate(plots):
+        if i >= 1:
+            p[0].x_range = plots[0][0].x_range    # link x-axes
 
     fig = gridplot(plots, sizing_mode="stretch_width")
 
@@ -71,9 +79,11 @@ def plot_dataset(original_resp_biofeedback_path,
 subject = st.sidebar.selectbox("Select participant", SUBJECTS)
 session = st.sidebar.selectbox("Select session", SESSIONS)
 
-window = st.sidebar.number_input("Local HRV power average window (sec)", min_value=1, max_value=15, step=1)
+window = st.sidebar.number_input("Local HRV power average window (sec)",
+                                 min_value=1, max_value=15, step=1)
 window = int(np.rint(window * SFREQ))
-target = st.sidebar.number_input("Local HRV power target (msec)", min_value=25, max_value=250, step=10)
+target = st.sidebar.number_input("Local HRV power target (msec)",
+                                 min_value=25, max_value=250, step=10)
 
 original_resp_biofeedback_path = list(Path(f"{DATADIR_PROCESSED}/{subject}").glob(f"{subject}_{session}*resp_biofeedback"))
 ibis_path = list(Path(f"{DATADIR_PROCESSED}/{subject}").glob(f"{subject}_{session}*ibis"))
