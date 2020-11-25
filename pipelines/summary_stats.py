@@ -72,7 +72,8 @@ def summary_instantiate(subject, inputs, outputs, recompute):
          "hrv_lf_hf_ratio": "", "hrv_lf_nu": "", "hrv_hf_nu": "",
          "median_heart_period": "", "coherence_lf": "", "coherence_hf": "",
          "median_original_resp_biofeedback": "", "median_local_power_hrv": "",
-         "mean_original_resp_biofeedback": "", "mean_local_power_hrv": ""}
+         "mean_original_resp_biofeedback": "", "mean_local_power_hrv": "",
+         "rmssd": ""}
     df = pd.DataFrame(data=d)
     df.to_csv(save_path, sep="\t", index=False)
 
@@ -226,7 +227,7 @@ def summary_heart(subject, inputs, outputs, recompute):
 
         row_idx = get_row_idx(physio_path, df_summary)
         columns = ["hrv_lf", "hrv_hf", "hrv_vlf", "hrv_lf_hf_ratio",
-                   "hrv_lf_nu", "hrv_hf_nu", "median_heart_period"]
+                   "hrv_lf_nu", "hrv_hf_nu", "median_heart_period", "rmssd"]
         computed = df_summary.loc[row_idx, columns].isna().values.sum() != len(columns)   # skip if all columns contain NaN (make sure to reserve NaN as place-holder for non-computed results)
         if computed and not recompute:
             print(f"Not re-computing {physio_path}.")

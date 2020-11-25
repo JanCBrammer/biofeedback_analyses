@@ -134,6 +134,7 @@ def compute_hrv_stats(ibis, sfreq):
     stats["hrv_lf_nu"] = (lf / (lf + hf)) * 100
     stats["hrv_hf_nu"] = (hf / (lf + hf)) * 100
     stats["median_heart_period"] = np.median(ibis)
+    stats["rmssd"] = np.sqrt(np.mean(np.diff(ibis) ** 2))
 
     # plt.figure()
 
