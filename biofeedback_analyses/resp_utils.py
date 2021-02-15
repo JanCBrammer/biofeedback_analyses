@@ -60,6 +60,7 @@ def compute_resp_stats(resp, sfreq):
     _, rate, amp = resp_stats(extrema, resp, sfreq)
     stats["median_resp_rate"] = np.median(rate)
     stats["median_resp_amp"] = np.median(amp)
+    stats["mean_resp_rate"] = np.mean(rate)
 
     return stats
 

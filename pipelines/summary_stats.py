@@ -73,7 +73,7 @@ def summary_instantiate(subject, inputs, outputs, recompute):
          "median_heart_period": "", "coherence_lf": "", "coherence_hf": "",
          "median_original_resp_biofeedback": "", "median_local_power_hrv": "",
          "mean_original_resp_biofeedback": "", "mean_local_power_hrv": "",
-         "rmssd": ""}
+         "rmssd": "", "mean_resp_rate": ""}
     df = pd.DataFrame(data=d)
     df.to_csv(save_path, sep="\t", index=False)
 
@@ -102,7 +102,7 @@ def summary_resp(subject, inputs, outputs, recompute):
     for i, physio_path in enumerate(physio_paths):
 
         row_idx = get_row_idx(physio_path, df_summary)
-        columns = ["median_resp_amp", "median_resp_rate"]
+        columns = ["median_resp_amp", "median_resp_rate", "mean_resp_rate"]
         computed = df_summary.loc[row_idx, columns].isna().values.sum() != len(columns)   # skip if all columns contain NaN (make sure to reserve NaN as place-holder for non-computed results)
         if computed and not recompute:
             print(f"Not re-computing {physio_path}.")

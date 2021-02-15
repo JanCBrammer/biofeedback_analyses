@@ -22,12 +22,12 @@ pipeline = [
     #  "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
     #  "recompute": False},
 
-    # {"func": summary_resp,
-    #  "subjects": SUBJECTS,
-    #  "inputs": {"event_path": [DATADIR_PROCESSED, "*events"],
-    #             "physio_path": [DATADIR_RAW, "*recordsignal*"]},
-    #  "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
-    #  "recompute": False},
+    {"func": summary_resp,
+     "subjects": SUBJECTS,
+     "inputs": {"event_path": [DATADIR_PROCESSED, "*events"],
+                "physio_path": [DATADIR_RAW, "*recordsignal*"]},
+     "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
+     "recompute": True}
 
     # {"func": summary_bursts,
     #  "subjects": SUBJECTS,
@@ -36,12 +36,12 @@ pipeline = [
     #  "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
     #  "recompute": False},
 
-    {"func": summary_heart,
-     "subjects": SUBJECTS,
-     "inputs": {"event_path": [DATADIR_PROCESSED, "*events"],
-                "physio_path": [DATADIR_PROCESSED, "*ibis"]},
-     "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
-     "recompute": True}
+    # {"func": summary_heart,
+    #  "subjects": SUBJECTS,
+    #  "inputs": {"event_path": [DATADIR_PROCESSED, "*events"],
+    #             "physio_path": [DATADIR_PROCESSED, "*ibis"]},
+    #  "outputs": {"save_path": [DATADIR_PROCESSED, "summary_all_subjects"]},
+    #  "recompute": True},
 
     # {"func": summary_coherence,
     #  "subjects": SUBJECTS,
