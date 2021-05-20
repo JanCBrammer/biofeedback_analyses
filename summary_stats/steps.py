@@ -6,11 +6,9 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 
 import numpy as np
 import pandas as pd
-from itertools import product
-from pathlib import Path
 from mne.io import read_raw_edf
-from biofeedback_analyses import resp_utils, hrv_utils, event_utils, biofeedback_utils
-from biofeedback_analyses.config import SUBJECTS, SESSIONS, SFREQ
+from analysis_utils import resp_utils, hrv_utils, event_utils, biofeedback_utils
+from config import SFREQ
 
 
 def get_row_idx(path, df):
@@ -48,52 +46,20 @@ def get_game_beg_end(path, df):
     return beg, end
 
 
-def summary_instantiate(subject, inputs, outputs, recompute):
-
-    root = outputs["save_path"][0]
-    filename = outputs["save_path"][1]
-    save_path = Path(root).joinpath(filename)
-
-    computed = save_path.exists()   # Boolean indicating if file already exists.
-    if computed and not recompute:    # only recompute if requested
-        print(f"Not overwriting {save_path}.")
-        return
-
-    rows = list(product(SUBJECTS, SESSIONS))
-    subjects = [row[0] for row in rows]
-    sessions = [row[1][:7] for row in rows]
-    conditions = [row[1][-6:] for row in rows]
-
-    d = {"subj": subjects, "sess": sessions, "cond": conditions,
-         "median_resp_amp": "", "median_resp_rate": "",
-         "normalized_median_resp_power": "", "n_bursts": "",
-         "mean_duration_bursts": "", "std_duration_bursts": "",
-         "percent_bursts": "", "hrv_lf": "", "hrv_hf": "", "hrv_vlf": "",
-         "hrv_lf_hf_ratio": "", "hrv_lf_nu": "", "hrv_hf_nu": "",
-         "median_heart_period": "", "coherence_lf": "", "coherence_hf": "",
-         "median_original_resp_biofeedback": "", "median_local_power_hrv": "",
-         "mean_original_resp_biofeedback": "", "mean_local_power_hrv": "",
-         "rmssd": "", "mean_resp_rate": ""}
-    df = pd.DataFrame(data=d)
-    df.to_csv(save_path, sep="\t", index=False)
-
-    print(f"Saved {save_path}")
-
-
 def summary_resp(subject, inputs, outputs, recompute):
 
     root = outputs["save_path"][0]
     filename = outputs["save_path"][1]
-    save_path = Path(root).joinpath(f"{filename}")
+    save_path = root.joinpath(f"{filename}")
     df_summary = pd.read_csv(save_path, sep="\t")    # raises if file doesn't exist
 
     root = inputs["physio_path"][0]
     filename = inputs["physio_path"][1]
-    physio_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    physio_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     root = inputs["event_path"][0]
     filename = inputs["event_path"][1]
-    event_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    event_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     if not physio_paths:
         print(f"No files found for {subject}.")
@@ -139,16 +105,16 @@ def summary_bursts(subject, inputs, outputs, recompute):
 
     root = outputs["save_path"][0]
     filename = outputs["save_path"][1]
-    save_path = Path(root).joinpath(f"{filename}")
+    save_path = root.joinpath(f"{filename}")
     df_summary = pd.read_csv(save_path, sep="\t")    # raises if file doesn't exist
 
     root = inputs["physio_path"][0]
     filename = inputs["physio_path"][1]
-    physio_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    physio_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     root = inputs["event_path"][0]
     filename = inputs["event_path"][1]
-    event_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    event_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     if not physio_paths:
         print(f"No files found for {subject}.")
@@ -208,16 +174,16 @@ def summary_heart(subject, inputs, outputs, recompute):
 
     root = outputs["save_path"][0]
     filename = outputs["save_path"][1]
-    save_path = Path(root).joinpath(f"{filename}")
+    save_path = root.joinpath(f"{filename}")
     df_summary = pd.read_csv(save_path, sep="\t")    # raises if file doesn't exist
 
     root = inputs["physio_path"][0]
     filename = inputs["physio_path"][1]
-    physio_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    physio_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     root = inputs["event_path"][0]
     filename = inputs["event_path"][1]
-    event_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    event_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     if not physio_paths:
         print(f"No files found for {subject}.")
@@ -265,20 +231,20 @@ def summary_coherence(subject, inputs, outputs, recompute):
 
     root = outputs["save_path"][0]
     filename = outputs["save_path"][1]
-    save_path = Path(root).joinpath(f"{filename}")
+    save_path = root.joinpath(f"{filename}")
     df_summary = pd.read_csv(save_path, sep="\t")    # raises if file doesn't exist
 
     root = inputs["resp_path"][0]
     filename = inputs["resp_path"][1]
-    resp_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    resp_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     root = inputs["ibis_path"][0]
     filename = inputs["ibis_path"][1]
-    ibis_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    ibis_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     root = inputs["event_path"][0]
     filename = inputs["event_path"][1]
-    event_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    event_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     for i, resp_path in enumerate(resp_paths):
 
@@ -330,16 +296,16 @@ def summary_hrv_biofeedback(subject, inputs, outputs, recompute):
 
     root = outputs["save_path"][0]
     filename = outputs["save_path"][1]
-    save_path = Path(root).joinpath(f"{filename}")
+    save_path = root.joinpath(f"{filename}")
     df_summary = pd.read_csv(save_path, sep="\t")    # raises if file doesn't exist
 
     root = inputs["physio_path"][0]
     filename = inputs["physio_path"][1]
-    physio_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    physio_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     root = inputs["event_path"][0]
     filename = inputs["event_path"][1]
-    event_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    event_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     if not physio_paths:
         print(f"No files found for {subject}.")
@@ -386,16 +352,16 @@ def summary_resp_biofeedback(subject, inputs, outputs, recompute):
 
     root = outputs["save_path"][0]
     filename = outputs["save_path"][1]
-    save_path = Path(root).joinpath(f"{filename}")
+    save_path = root.joinpath(f"{filename}")
     df_summary = pd.read_csv(save_path, sep="\t")    # raises if file doesn't exist
 
     root = inputs["physio_path"][0]
     filename = inputs["physio_path"][1]
-    physio_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    physio_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     root = inputs["event_path"][0]
     filename = inputs["event_path"][1]
-    event_paths = list(Path(root).joinpath(subject).glob(f"{subject}{filename}"))
+    event_paths = list(root.joinpath(subject).glob(f"{subject}{filename}"))
 
     if not physio_paths:
         print(f"No files found for {subject}.")

@@ -9,10 +9,8 @@ import pandas as pd
 from scipy.signal import hilbert
 from biopeaks.resp import resp_extrema, resp_stats
 from biopeaks.analysis_utils import find_segments
-import streamlit as st
 
 
-@st.cache
 def median_inst_amp(paths):
 
     inst_amps = []
@@ -103,7 +101,7 @@ def compute_burst_stats(bursts, sfreq):
 
     stats["n_bursts"] = durations.size
     stats["mean_duration_bursts"] = durations.mean() / sfreq
-    stats["std_duration_bursts"] = durations.mean() / sfreq
+    stats["std_duration_bursts"] = durations.std() / sfreq
     stats["percent_bursts"] = 100 * np.sum(bursts) / len(bursts)
 
     return stats

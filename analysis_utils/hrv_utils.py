@@ -5,8 +5,8 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
 import numpy as np
-from biofeedback_analyses import event_utils
-from biopeaks.filters import butter_lowpass_filter, moving_average
+from analysis_utils import event_utils
+from biopeaks.filters import butter_lowpass_filter
 from biopeaks.heart import correct_peaks
 from scipy.interpolate import interp1d
 from scipy.signal import welch, coherence, find_peaks
@@ -99,7 +99,7 @@ def interpolate_ibis(peaks, ibis, interpolation_samples):
         IBIs interpolated over samples and lowpass filtered with highcut of 1 Hz.
     """
     f_interp = interp1d(peaks, ibis, bounds_error=False,
-                        fill_value=(ibis[0], ibis[-1]))
+                        fill_value=(ibis[0], ibis[-1]))    # extrapolate IBIs preceding first peak and following last peaks
     ibis_interpolated = f_interp(interpolation_samples)
 
     # Smooth out edges left over from linear interpolation. Lowpass filtering
