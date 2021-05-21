@@ -10,6 +10,7 @@ from config import SUBJECTS, SESSIONS
 from pathlib import Path
 from preprocessing.pipeline import pipeline as preprocessing_pipeline
 from summary_stats.pipeline import pipeline as summary_stats_pipeline
+from plotting.pipeline import pipeline as plotting_pipeline
 
 
 def setup_directories():
@@ -80,10 +81,11 @@ def main():
     """Command line entry point."""
     print("Setting up directories.")
     DATADIR_RAW, DATADIR_PROCESSED = setup_directories()
+    setup_summary(DATADIR_PROCESSED)
     print("Running data processing pipeline.")
     run(preprocessing_pipeline(SUBJECTS, DATADIR_RAW, DATADIR_PROCESSED))
-    setup_summary(DATADIR_PROCESSED)
     run(summary_stats_pipeline(SUBJECTS, DATADIR_RAW, DATADIR_PROCESSED))
+    run(plotting_pipeline(SUBJECTS, DATADIR_RAW, DATADIR_PROCESSED))
 
 
 if __name__ == "__main__":
