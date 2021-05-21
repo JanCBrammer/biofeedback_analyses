@@ -4,7 +4,7 @@
 author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
-from plotting.steps import (validate_summary_data,
+from biofeedback_analyses.plotting.steps import (validate_summary_data,
                             plot_figure_2,
                             plot_figure_3)
 

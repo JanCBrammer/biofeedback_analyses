@@ -4,7 +4,7 @@
 author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
-from preprocessing.steps import (preprocess_events,
+from biofeedback_analyses.preprocessing.steps import (preprocess_events,
                                  preprocess_ibis,
                                  preprocess_resp,
                                  preprocess_hrv_biofeedback,

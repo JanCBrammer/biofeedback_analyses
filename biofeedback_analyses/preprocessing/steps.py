@@ -7,7 +7,7 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 import pandas as pd
 import numpy as np
 from mne.io import read_raw_edf
-from analysis_utils import event_utils, resp_utils, hrv_utils, biofeedback_utils
+from biofeedback_analyses.analysis_utils import event_utils, resp_utils, hrv_utils, biofeedback_utils
 
 
 def preprocess_events(subject, inputs, outputs, recompute):

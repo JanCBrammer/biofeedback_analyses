@@ -4,12 +4,12 @@
 author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
-from summary_stats.steps import (summary_resp,
-                                 summary_bursts,
-                                 summary_hrv_biofeedback,
-                                 summary_resp_biofeedback,
-                                 summary_heart,
-                                 summary_coherence)
+from biofeedback_analyses.summary_stats.steps import (summary_resp,
+                                                      summary_bursts,
+                                                      summary_hrv_biofeedback,
+                                                      summary_resp_biofeedback,
+                                                      summary_heart,
+                                                      summary_coherence)
 
 
 def pipeline(SUBJECTS, DATADIR_RAW, DATADIR_PROCESSED):

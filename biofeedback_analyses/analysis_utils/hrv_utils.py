@@ -5,7 +5,7 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
 import numpy as np
-from analysis_utils import event_utils
+from biofeedback_analyses.analysis_utils import event_utils
 from biopeaks.filters import butter_lowpass_filter
 from biopeaks.heart import correct_peaks
 from scipy.interpolate import interp1d

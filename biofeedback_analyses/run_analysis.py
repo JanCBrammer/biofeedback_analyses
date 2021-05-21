@@ -6,11 +6,11 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 
 import pandas as pd
 from itertools import product
-from config import SUBJECTS, SESSIONS
 from pathlib import Path
-from preprocessing.pipeline import pipeline as preprocessing_pipeline
-from summary_stats.pipeline import pipeline as summary_stats_pipeline
-from plotting.pipeline import pipeline as plotting_pipeline
+from biofeedback_analyses.config import SUBJECTS, SESSIONS
+from biofeedback_analyses.preprocessing.pipeline import pipeline as preprocessing_pipeline
+from biofeedback_analyses.summary_stats.pipeline import pipeline as summary_stats_pipeline
+from biofeedback_analyses.plotting.pipeline import pipeline as plotting_pipeline
 
 
 def setup_directories():
@@ -19,15 +19,15 @@ def setup_directories():
 
     DATADIR_RAW = WORKDIR.joinpath("raw")
     if not DATADIR_RAW.is_dir():
-        print("Couldn't find \"raw\" data directory.")
-        return
+        raise FileNotFoundError("Couldn't find \"raw\" data directory.")
 
     DATADIR_PROCESSED = WORKDIR.joinpath("processed")
     try:
         DATADIR_PROCESSED.mkdir()
     except FileExistsError as _:
         print("Found existing \"processed\" directory during initialization."
-              "Please remove or move the existing \"processed\" directory.")
+              " Please remove or move the existing \"processed\" directory.")
+        raise    # re-raises last exception
     for subject in SUBJECTS:
         DATADIR_PROCESSED.joinpath(subject).mkdir()
 

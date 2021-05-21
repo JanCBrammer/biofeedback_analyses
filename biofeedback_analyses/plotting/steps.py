@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
-from config import DATA_HASH
+from biofeedback_analyses.config import DATA_HASH
 
 sns.set_theme()
 

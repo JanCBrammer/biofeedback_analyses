@@ -15,7 +15,7 @@ setup(
     license="GPL-3.0",
     entry_points={
         "console_scripts": [
-            "plot_figures=run_analysis:main"
+            "plot_figures=biofeedback_analyses.run_analysis:main"
             ]
         }
 )

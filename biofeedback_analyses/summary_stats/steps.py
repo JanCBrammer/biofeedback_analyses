@@ -7,8 +7,8 @@ author: Jan C. Brammer <jan.c.brammer@gmail.com>
 import numpy as np
 import pandas as pd
 from mne.io import read_raw_edf
-from analysis_utils import resp_utils, hrv_utils, event_utils, biofeedback_utils
-from config import SFREQ
+from biofeedback_analyses.analysis_utils import resp_utils, hrv_utils, event_utils, biofeedback_utils
+from biofeedback_analyses.config import SFREQ
 
 
 def get_row_idx(path, df):
