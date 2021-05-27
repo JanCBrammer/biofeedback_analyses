@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "biofeedback_analyses"
+version = "0.0.1"
+description = "Analysis code repository for reproducing Figures 2 and 3 of doi.org/10.3389/fpsyg.2021.586553."
+authors = ["Jan C. Brammer <jan.c.brammer@gmail.com>"]
+license = "MIT"
+exclude = ["misc", "literature"]
+
+[tool.poetry.dependencies]
+python = "3.8.10"
+scipy = "1.6.3"
+numpy = "1.20.1"
+pandas = "1.2.4"
+mne = "0.23.0"
+matplotlib = "3.4.2"
+seaborn = "0.11.1"
+biopeaks = "1.4.1"
+dabest = "0.3.1"
+
+[tool.poetry.scripts]
+plot_figures = "biofeedback_analyses.run_analysis:main"
+
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -32,8 +32,8 @@ def validate_summary_data(subject, inputs, outputs, recompute):
         while block:
             h.update(block)
             block = file.read(512)
-
-    assert h.hexdigest() == DATA_HASH, f"The content of {summary_path} doesn't match the original data."
+    hash = h.hexdigest()
+    assert hash == DATA_HASH, f"The hash of {summary_path} ({hash}) doesn't match the hash of the original data ({DATA_HASH})."
 
 
 def plot_figure_2(subject, inputs, outputs, recompute):
