@@ -2,7 +2,7 @@
 
 # run Docker image (i.e., instantiate Docker container) with `docker run --mount type=bind,source="$(pwd)",target=/app/data image-name` in directory containing the `raw` data folder
 
-FROM python:3.8.10
+FROM python:3.8.10-slim
 
 # get all files required for installing analysis pipeline
 RUN mkdir /app

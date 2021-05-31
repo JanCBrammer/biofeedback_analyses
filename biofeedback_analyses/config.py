@@ -4,7 +4,7 @@
 author: Jan C. Brammer <jan.c.brammer@gmail.com>
 """
 
-DATA_HASH = "9ce0113ec6a56e397d00c67e9b3e6ea9"  # MD5 hash of original data used for regression tests during re-runs of the analysis
+DATA_HASH = "9f5ab7692cf0bc96c64b388c87fc99c7"  # MD5 hash of original data used for regression tests during re-runs of the analysis
 SFREQ = 10
 SUBJECTS = [f"subj-{str(i).zfill(2)}" for i in range(1, 10)]
 sessions = [f"sess-{str(i).zfill(2)}" for i in range(1, 11)]
