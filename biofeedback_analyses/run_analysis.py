@@ -50,15 +50,11 @@ def setup_summary(DATADIR_PROCESSED):
     conditions = [row[1][-6:] for row in rows]
 
     d = {"subj": subjects, "sess": sessions, "cond": conditions,
-         "median_resp_amp": "", "median_resp_rate": "",
-         "normalized_median_resp_power": "", "n_bursts": "",
-         "mean_duration_bursts": "", "std_duration_bursts": "",
-         "percent_bursts": "", "hrv_lf": "", "hrv_hf": "", "hrv_vlf": "",
+         "median_resp_amp": "", "median_resp_rate": "", "mean_resp_rate": "",
+         "median_heart_period": "", "rmssd": "",
+         "hrv_lf": "", "hrv_hf": "", "hrv_vlf": "",
          "hrv_lf_hf_ratio": "", "hrv_lf_nu": "", "hrv_hf_nu": "",
-         "median_heart_period": "", "coherence_lf": "", "coherence_hf": "",
-         "median_original_resp_biofeedback": "", "median_local_power_hrv": "",
-         "mean_original_resp_biofeedback": "", "mean_local_power_hrv": "",
-         "rmssd": "", "mean_resp_rate": ""}
+         "median_original_resp_biofeedback": "", "mean_original_resp_biofeedback": "", }
     df = pd.DataFrame(data=d)
     df.to_csv(save_path, sep="\t", index=False)
 

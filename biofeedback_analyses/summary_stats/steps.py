@@ -370,7 +370,7 @@ def summary_resp_biofeedback(subject, inputs, outputs, recompute):
     for i, physio_path in enumerate(physio_paths):
 
         row_idx = get_row_idx(physio_path, df_summary)
-        columns = ["mean_local_power_hrv", "median_local_power_hrv"]
+        columns = ["mean_original_resp_biofeedback", "median_original_resp_biofeedback"]
         computed = df_summary.loc[row_idx, columns].isna().values.sum() != len(columns)   # skip if all columns contain NaN (make sure to reserve NaN as place-holder for non-computed results)
         if computed and not recompute:
             print(f"Not re-computing {physio_path}.")
