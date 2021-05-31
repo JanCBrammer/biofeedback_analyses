@@ -4,3 +4,4 @@ __pycache__/
 literature/
 biofeedback_analyses.egg-info/
 misc/
+*.tar
